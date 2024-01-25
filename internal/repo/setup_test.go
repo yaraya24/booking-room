@@ -31,7 +31,7 @@ func run(m *testing.M) (int, error) {
 	}
 
 	defer func() {
-		for _, t := range []string{"users", "bookings", "rooms"} {
+		for _, t := range []string{"users", "bookings"} {
 			_, _ = db.DB.Exec(fmt.Sprintf("DELETE FROM %s", t))
 		}
 		db.DB.Close()

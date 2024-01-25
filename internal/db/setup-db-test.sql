@@ -20,10 +20,6 @@ CREATE TABLE bookings (
     UNIQUE(room, date)
 );
 
-INSERT INTO users (username, password) VALUES ('Jane', 'password');
-INSERT INTO users (username, password) VALUES ('Sarah', 'password');
-INSERT INTO users (username, password) VALUES ('John', 'password');
-
 INSERT INTO rooms (name) VALUES ('A');
 INSERT INTO rooms (name) VALUES ('B');
 INSERT INTO rooms (name) VALUES ('C');
