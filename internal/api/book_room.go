@@ -31,13 +31,14 @@ type requestBody struct {
 func (b BookRoomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logging.FromContext(ctx)
-	user, _ := r.Context().Value("user_id").(int)
-	// if !ok {
-	// 	log.Error("unable to identify user")
-	// 	errorResponse(w, APIError{Code: http.StatusUnauthorized, Message: "unauthorized request"})
-	// 	return
-	// }
-	user = 1
+
+	user, ok := r.Context().Value("user_id").(int)
+	if !ok {
+		log.Error("unable to identify user")
+		errorResponse(w, APIError{Code: http.StatusUnauthorized, Message: "unauthorized request"})
+		return
+	}
+
 	var req requestBody
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {

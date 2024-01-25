@@ -24,6 +24,7 @@ type Services struct {
 type Repos struct {
 	FindRooms *repo.FindRoomsRepo
 	BookRoom  *repo.BookRoomRepo
+	FindUser  *repo.FindUserRepo
 }
 
 func NewServer(db *db.Database) (*http.Server, error) {
@@ -32,6 +33,9 @@ func NewServer(db *db.Database) (*http.Server, error) {
 	services := buildServices(repos)
 	handlers := buildHandlers(services)
 
+	middleware := NewAuthenticationMiddleware(repos.FindUser)
+
+	router.Use(middleware.ServeHTTP)
 	router.Handle("/bookings", handlers.GetAvailableRooms).Methods(http.MethodGet)
 	router.Handle("/bookings", handlers.BookRoom).Methods(http.MethodPost)
 
@@ -62,5 +66,6 @@ func buildRepos(db *db.Database) Repos {
 	return Repos{
 		FindRooms: repo.NewFindRoomsRepo(db),
 		BookRoom:  repo.NewBookRoomsRepo(db),
+		FindUser:  repo.NewFindUserRepo(db),
 	}
 }
