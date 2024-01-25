@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/yaraya24/book-meeting-room/internal/api"
+	"github.com/yaraya24/book-meeting-room/internal/db"
 	"github.com/yaraya24/book-meeting-room/internal/pkg/logging"
 )
 
@@ -16,7 +18,17 @@ func main() {
 	ctx := context.Background()
 	log := logging.FromContext(ctx)
 
-	startServer(&http.Server{}, 30, log)
+	db, err := db.SetupDB("./booking_room.db")
+	defer db.DB.Close()
+	if err != nil {
+		log.Panicf("unable to setup database: %s", err)
+	}
+	server, err := api.NewServer(db)
+	if err != nil {
+		log.Panic("Unable to setup server: %w", err)
+	}
+
+	startServer(server, 30, log)
 }
 
 func startServer(server *http.Server, shutdownTimeout time.Duration, log *logrus.Entry) {
