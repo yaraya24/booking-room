@@ -1,8 +1,8 @@
 # Book Meeting Room Backend
 
 ### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+- Golang
+- Sqlite3 (gcc is necessary and set environment variable CGO_ENABLED=1)
 
 ### Installation
 
