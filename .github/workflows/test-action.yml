@@ -17,4 +17,4 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Try to fail
-      run: exit 0
+      run: exit 1
