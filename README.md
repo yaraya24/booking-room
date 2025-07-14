@@ -1,52 +1,6 @@
 # Book Meeting Room Backend
 
-### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
 
-### Installation
-
-
-1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```
-
-2. Setup the database 
-
-```
-sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
-```
-3. you can then run the server using 
-```
-go run cmd/main.go 
-```
-
-4. Or you can build the app to be an executable that can then be run:
-```
-go build ./cmd
-```
-
-### Usage
-
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
-```
-Jane:password
-John:password
-Sarah:password
-```
-
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
-
-example:
-```
-{
-	"date": "2024-10-10",
-	"room": "D"
-}
-```
-
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
 
 ## Bugs/Problems
 1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
