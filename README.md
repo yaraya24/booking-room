@@ -1,71 +1,239 @@
-# Book Meeting Room Backend
+# Meeting Room Booking System
 
-### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+A lightweight, RESTful API backend for booking meeting rooms built with Go and SQLite. This system provides basic authentication, room availability checking, and booking management functionality.
 
-### Installation
+## Features
 
+- 🏢 **Room Management**: View available meeting rooms
+- 📅 **Booking System**: Book rooms for specific dates
+- 🔐 **Basic Authentication**: Secure API access with username/password
+- 📊 **Availability Checking**: Check room availability for any date
+- 🧪 **Well Tested**: Comprehensive unit tests with mocks
+- 🏗️ **Clean Architecture**: Structured with separation of concerns (API, Service, Repository layers)
 
-1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```
+## Prerequisites
 
-2. Setup the database 
+Before running this application, ensure you have the following installed:
 
+- **Go 1.19+**: [Download and install Go](https://golang.org/dl/)
+- **SQLite3**: Required for database operations
+- **GCC**: Required for SQLite3 CGO compilation
+  ```bash
+  # Set environment variable for CGO
+  export CGO_ENABLED=1
+  ```
+
+## Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone git@github.com:yaraya24/booking-room.git
+   cd booking-room
+   ```
+
+2. **Install dependencies**
+   ```bash
+   go mod tidy
+   ```
+
+3. **Set up the database**
+   ```bash
+   sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
+   ```
+
+4. **Run the application**
+   
+   Option A: Run directly with Go
+   ```bash
+   go run cmd/main.go
+   ```
+   
+   Option B: Build and run executable
+   ```bash
+   go build -o booking-room ./cmd
+   ./booking-room
+   ```
+
+The server will start on `http://localhost:8080`
+
+## API Documentation
+
+### Authentication
+
+All endpoints require Basic Authentication. Use any of the following credentials:
+
+| Username | Password |
+|----------|----------|
+| Jane     | password |
+| John     | password |
+| Sarah    | password |
+
+### Endpoints
+
+#### 1. Get Available Rooms
+
+**GET** `/bookings?date={YYYY-MM-DD}`
+
+Returns all available rooms for the specified date.
+
+**Parameters:**
+- `date` (required): Date in format `YYYY-MM-DD` (e.g., `2024-10-10`)
+
+**Example Request:**
+```bash
+curl -u Jane:password "http://localhost:8080/bookings?date=2024-10-10"
 ```
-sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
-```
-3. you can then run the server using 
-```
-go run cmd/main.go 
-```
 
-4. Or you can build the app to be an executable that can then be run:
-```
-go build ./cmd
-```
-
-### Usage
-
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
-```
-Jane:password
-John:password
-Sarah:password
-```
-
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
-
-example:
-```
+**Example Response:**
+```json
 {
-	"date": "2024-10-10",
-	"room": "D"
+  "available_rooms": {
+    "rooms": [
+      {"name": "A"},
+      {"name": "B"},
+      {"name": "C"},
+      {"name": "D"}
+    ],
+    "date": "2024-10-10"
+  }
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+#### 2. Book a Room
 
-## Bugs/Problems
-1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
+**POST** `/bookings`
 
-2. I'm missing some validation for when users make a POST request
+Books a room for a specific date.
 
-3. I had decided to use an sql file to setup the database and consequently I wasn't able to hash the passwords. They are now stored in plaintext which is not okay.
+**Request Body:**
+```json
+{
+  "date": "2024-10-10",
+  "room": "A"
+}
+```
 
-4. We don't have any meta columns in our databases like updated and created timestamps
+**Example Request:**
+```bash
+curl -u Jane:password \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"date": "2024-10-10", "room": "A"}' \
+  http://localhost:8080/bookings
+```
 
-5. We don't ping the database to make sure that it actually runs
+**Success Response:**
+- **Status Code:** `201 Created`
+- **Body:** Empty
 
-6. I wanted to have middleware that provides logging of the request, request-id, response status, etc but I didn't have time.
+**Error Responses:**
+- `400 Bad Request`: Invalid date format or room already booked
+- `401 Unauthorized`: Invalid credentials
+- `500 Internal Server Error`: Server error
 
-7. Didn't have any real integration tests - the only ones I added are in the repo layer. Again time issue though ideally this would be done via something like Jenkins as a smoke test.
+## Project Structure
 
-## Improvements
-1. Would have been nice to add a cache like Redis or an in-memory cache to improve the scalability of the application. When checking for available rooms for a date, we can use something like an LRU cache and when a booking occurs, that date can be updated. This is compounded by the fact that sqlite3 doesn't allow for concurrent access.
+```
+.
+├── cmd/
+│   └── main.go                 # Application entry point
+├── internal/
+│   ├── api/                    # HTTP handlers and routing
+│   │   ├── server.go          # Server setup and routing
+│   │   ├── book_room.go       # Room booking handler
+│   │   ├── available_rooms.go # Available rooms handler
+│   │   ├── middleware.go      # Authentication middleware
+│   │   └── models.go          # API request/response models
+│   ├── service/               # Business logic layer
+│   ├── repo/                  # Data access layer
+│   ├── db/                    # Database setup and configuration
+│   │   ├── db.go             # Database connection
+│   │   └── setup-db.sql      # Database schema and seed data
+│   ├── domain/               # Domain models
+│   ├── errors/               # Custom error types
+│   └── pkg/                  # Shared packages
+│       └── logging/          # Logging utilities
+├── go.mod
+├── go.sum
+└── README.md
+```
 
-2. Improve the database, either going to mySQL or Postgres. I could have set some options to improve the performance of sqlite but didn't have time to look into it in detail. But ultimately, a production ready database would be preferred.
+## Available Rooms
 
-3. For security/reliability - a rate limiter would also be nice to ensure our service is protected against heavy or even malicious use. 
+The system comes pre-configured with four meeting rooms:
+- Room A
+- Room B  
+- Room C
+- Room D
+
+## Testing
+
+Run the test suite to ensure everything is working correctly:
+
+```bash
+# Run all tests
+go test ./...
+
+# Run tests with verbose output
+go test ./... -v
+
+# Run tests with coverage
+go test ./... -cover
+```
+
+## Database Schema
+
+The application uses SQLite with the following tables:
+
+- **users**: User credentials for authentication
+- **rooms**: Available meeting rooms  
+- **bookings**: Room booking records with unique constraints on (room, date)
+
+## Known Issues & Limitations
+
+### Current Issues
+1. **Room Validation**: Users can book rooms that don't exist (no validation against rooms table)
+2. **Input Validation**: Limited validation on POST request data
+3. **Password Security**: Passwords are stored in plaintext (not hashed)
+4. **Audit Trail**: No created/updated timestamps in database
+5. **Health Checks**: No database ping/health check on startup
+6. **Request Logging**: Missing comprehensive request/response logging middleware
+7. **Integration Tests**: Limited integration test coverage
+
+### Architecture Limitations
+1. **Concurrency**: SQLite doesn't support concurrent writes effectively
+2. **Scalability**: No caching layer (Redis/in-memory cache would improve performance)
+3. **Database**: SQLite not suitable for production; consider PostgreSQL/MySQL
+4. **Rate Limiting**: No protection against excessive API usage
+5. **Security**: No HTTPS/TLS configuration
+
+## Troubleshooting
+
+### Common Issues
+
+**CGO compilation errors:**
+```bash
+export CGO_ENABLED=1
+# Ensure GCC is installed on your system
+```
+
+**Database file not found:**
+```bash
+# Ensure you've run the database setup command
+sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
+```
+
+**Port already in use:**
+The application runs on port 8080. If this port is in use, you'll need to stop the conflicting service or modify the port in `internal/api/server.go`.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is available under the MIT License. 
