@@ -1,0 +1,27 @@
+name: workflow1
+on:
+  pull_request:
+    # Run on all pull requests regardless of target branch
+  push:
+    # Run on pushes to any branch
+  workflow_dispatch:
+    # Allow manual triggering
+  release:
+    types: [published, created]
+  issues:
+    types: [opened, closed, reopened]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test workflow1
+        run: echo "Running workflow1"
+      - name: Show trigger info
+        run: |
+          echo "Triggered by: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Actor: ${{ github.actor }}"
