@@ -1,71 +1,152 @@
 # Book Meeting Room Backend
 
-### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+A REST API backend service for booking meeting rooms, built with Go and SQLite. This service provides endpoints for viewing available rooms and making room reservations with Basic Authentication.
 
-### Installation
+## Table of Contents
 
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [API Endpoints](#api-endpoints)
+- [Testing](#testing)
+- [Known Issues](#known-issues)
+- [Future Improvements](#future-improvements)
 
-1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```
+## Requirements
 
-2. Setup the database 
+- **Go**: Version 1.19 or higher
+- **SQLite3**: Database engine (GCC is necessary and set environment variable `CGO_ENABLED=1`)
+- **GCC**: Required for SQLite3 compilation
 
-```
-sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
-```
-3. you can then run the server using 
-```
-go run cmd/main.go 
-```
+## Installation
 
-4. Or you can build the app to be an executable that can then be run:
-```
-go build ./cmd
-```
+1. **Clone the repository**
+   ```bash
+   git clone git@github.com:yaraya24/booking-room.git
+   cd booking-room
+   ```
 
-### Usage
+2. **Set up the database**
+   ```bash
+   sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
+   ```
 
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
-```
-Jane:password
-John:password
-Sarah:password
-```
+3. **Run the server directly**
+   ```bash
+   CGO_ENABLED=1 go run cmd/main.go
+   ```
 
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
+4. **Or build and run the executable**
+   ```bash
+   CGO_ENABLED=1 go build -o booking-room ./cmd
+   ./booking-room
+   ```
 
-example:
-```
+The server will start on `http://localhost:8080`.
+
+## Usage
+
+### Authentication
+
+The API uses Basic Authentication. Default users are configured in the `setup-db.sql` file, each with the password `password`:
+
+- **Jane**: `password`
+- **John**: `password`  
+- **Sarah**: `password`
+
+### Quick Start
+
+Once the server is running, you can interact with the API using tools like `curl` or Postman.
+
+## API Endpoints
+
+### Book a Room
+
+**Endpoint**: `POST /bookings`
+
+**Authentication**: Basic Auth required
+
+**Request Body**:
+```json
 {
-	"date": "2024-10-10",
-	"room": "D"
+    "date": "2024-10-10",
+    "room": "D"
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+**Example**:
+```bash
+curl -X POST http://localhost:8080/bookings \
+  -u "Jane:password" \
+  -H "Content-Type: application/json" \
+  -d '{"date": "2024-10-10", "room": "D"}'
+```
 
-## Bugs/Problems
-1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
+**Date Format**: `YYYY-MM-DD`
 
-2. I'm missing some validation for when users make a POST request
+**Available Rooms**: A, B, C, D
 
-3. I had decided to use an sql file to setup the database and consequently I wasn't able to hash the passwords. They are now stored in plaintext which is not okay.
+### View Available Rooms
 
-4. We don't have any meta columns in our databases like updated and created timestamps
+**Endpoint**: `GET /bookings?date={date}`
 
-5. We don't ping the database to make sure that it actually runs
+**Authentication**: Basic Auth required
 
-6. I wanted to have middleware that provides logging of the request, request-id, response status, etc but I didn't have time.
+**Query Parameters**:
+- `date`: Date in format `YYYY-MM-DD`
 
-7. Didn't have any real integration tests - the only ones I added are in the repo layer. Again time issue though ideally this would be done via something like Jenkins as a smoke test.
+**Example**:
+```bash
+curl -X GET "http://localhost:8080/bookings?date=2024-10-10" \
+  -u "Jane:password"
+```
 
-## Improvements
-1. Would have been nice to add a cache like Redis or an in-memory cache to improve the scalability of the application. When checking for available rooms for a date, we can use something like an LRU cache and when a booking occurs, that date can be updated. This is compounded by the fact that sqlite3 doesn't allow for concurrent access.
+## Testing
 
-2. Improve the database, either going to mySQL or Postgres. I could have set some options to improve the performance of sqlite but didn't have time to look into it in detail. But ultimately, a production ready database would be preferred.
+Run the test suite:
 
-3. For security/reliability - a rate limiter would also be nice to ensure our service is protected against heavy or even malicious use. 
+```bash
+CGO_ENABLED=1 go test ./...
+```
+
+Build and verify the application:
+
+```bash
+CGO_ENABLED=1 go build -o booking-room ./cmd
+```
+
+## Known Issues
+
+1. **Room Validation**: Users can book rooms that don't exist as the application doesn't validate room existence before creating bookings.
+
+2. **Input Validation**: Missing validation for POST request payloads.
+
+3. **Password Security**: Passwords are stored in plaintext in the database (due to SQL setup file constraints).
+
+4. **Database Schema**: Missing metadata columns like `created_at` and `updated_at` timestamps.
+
+5. **Database Health**: No database connectivity health checks on startup.
+
+6. **Logging**: Missing comprehensive request logging middleware (request ID, response status, etc.).
+
+7. **Test Coverage**: Limited integration tests - only repository layer tests are implemented.
+
+## Future Improvements
+
+### Performance & Scalability
+- **Caching**: Implement Redis or in-memory LRU cache for room availability queries
+- **Database**: Migrate from SQLite to PostgreSQL or MySQL for better concurrent access
+- **Rate Limiting**: Add rate limiting to protect against abuse
+
+### Security & Reliability  
+- **Password Hashing**: Implement proper password hashing (bcrypt)
+- **Input Validation**: Add comprehensive request validation
+- **Room Validation**: Validate room existence before booking
+- **Database Migration**: Use proper database migrations instead of SQL files
+
+### Development & Operations
+- **Integration Tests**: Add comprehensive API integration tests
+- **CI/CD**: Enhance GitHub Actions workflows  
+- **Request Logging**: Implement structured logging with request tracking
+- **Health Checks**: Add database and service health check endpoints
+- **Documentation**: Add OpenAPI/Swagger documentation 
