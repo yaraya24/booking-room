@@ -11,7 +11,7 @@
 ````clone git@github.com:yaraya24/booking-room.git```
 
 2. Setup the database 
-
+ggg
 ```
 sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
 ```
