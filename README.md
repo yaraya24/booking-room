@@ -8,7 +8,7 @@
 
 
 1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```
+````clone git@github.com:yaraya24/booking-room.git```dawda
 
 2. Setup the database 
 
