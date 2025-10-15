@@ -10,7 +10,7 @@
 1. Clone the repo
 ````clone git@github.com:yaraya24/booking-room.git```
 
-2. Setup the database 
+2. Setup the database tts
 
 ```
 sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
