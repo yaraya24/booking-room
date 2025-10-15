@@ -1,0 +1,46 @@
+name: Debugging Demo
+
+
+on:
+  pull_request:
+    # Run on all pull requests regardless of target branch
+  push:
+    # Run on pushes to any branch
+  workflow_dispatch:
+    # Allow manual triggering
+  release:
+    types: [published, created]
+  issues:
+    types: [opened, closed, reopened]
+  pull_request_review:
+    types: [submitted]
+
+
+env:
+  USER_1: "foo-user"
+  USER_2: "bar-user"
+
+
+jobs:
+  debug_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+
+      - name: Set USERNAME from USER_1
+        run: |
+          echo "USERNAME=$USER_1" >> $GITHUB_ENV
+
+
+      - name: Print USERNAME and Fail
+        run: |
+          echo "Printing USERNAME from previous step"
+          echo "Username: $USERNAME"
+          exit 1
+
+
+      - name: Print USER_2
+        run: |
+          echo "Printing USER_2: $USER_2"
