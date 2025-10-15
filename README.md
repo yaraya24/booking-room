@@ -5,7 +5,7 @@
 - Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
 
 ### Installation
-
+d
 
 1. Clone the repo
 ````clone git@github.com:yaraya24/booking-room.git```
