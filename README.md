@@ -7,7 +7,7 @@
 ### Installation
 
 
-1. Clone the repo
+1. Clone the repog
 ````clone git@github.com:yaraya24/booking-room.git```
 
 2. Setup the database 
