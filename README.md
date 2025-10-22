@@ -1,71 +1,110 @@
-# Book Meeting Room Backend
+# Booking Room
 
-### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+A simple meeting room booking system backend built with Go and SQLite.
 
-### Installation
+## Features
 
+- Book meeting rooms for specific dates
+- View available rooms for a given date
+- Basic authentication for users
+- RESTful API
 
-1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```rr
+## Requirements
 
-2. Setup the database 
+- Go 1.19 or higher
+- SQLite3
+- GCC (required for SQLite3 support)
+- CGO enabled (set `CGO_ENABLED=1` environment variable)
 
+## Installation
+
+1. Clone the repository:
+```bash
+git clone git@github.com:yaraya24/booking-room.git
+cd booking-room
 ```
+
+2. Set up the database:
+```bash
 sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
 ```
-3. you can then run the server using 
-```
-go run cmd/main.go 
+
+3. Install dependencies:
+```bash
+go mod download
 ```
 
-4. Or you can build the app to be an executable that can then be run:
-```
-go build ./cmd
+## Running the Application
+
+### Option 1: Run directly with Go
+```bash
+go run cmd/main.go
 ```
 
-### Usage
-
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
-```
-Jane:password
-John:password
-Sarah:password
+### Option 2: Build and run executable
+```bash
+go build -o booking-room ./cmd
+./booking-room
 ```
 
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
+The server will start on `http://localhost:8080`
 
-example:
-```
+## API Usage
+
+### Authentication
+
+All API endpoints require Basic Authentication. Use one of the following credentials:
+
+| Username | Password |
+|----------|----------|
+| Jane     | password |
+| John     | password |
+| Sarah    | password |
+
+### Endpoints
+
+#### Create a Booking
+
+**POST** `/bookings`
+
+Request body:
+```json
 {
-	"date": "2024-10-10",
-	"room": "D"
+  "date": "2024-10-10",
+  "room": "D"
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+- `date`: Format must be `YYYY-MM-DD`
+- `room`: Room name (A, B, C, or D)
 
-## Bugs/Problems
-1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
+#### View Available Rooms
 
-2. I'm missing some validation for when users make a POST request
+**GET** `/bookings?date={date}`
 
-3. I had decided to use an sql file to setup the database and consequently I wasn't able to hash the passwords. They are now stored in plaintext which is not okay.
+Query parameters:
+- `date`: Date in format `YYYY-MM-DD`
 
-4. We don't have any meta columns in our databases like updated and created timestamps
+Returns a list of available rooms for the specified date.
 
-5. We don't ping the database to make sure that it actually runs
+## Project Structure
 
-6. I wanted to have middleware that provides logging of the request, request-id, response status, etc but I didn't have time.
+```
+.
+├── cmd/
+│   └── main.go           # Application entry point
+├── internal/
+│   ├── api/              # HTTP handlers and routing
+│   ├── db/               # Database setup and migrations
+│   ├── domain/           # Domain models
+│   ├── errors/           # Error handling
+│   ├── pkg/              # Shared packages
+│   ├── repo/             # Data access layer
+│   └── service/          # Business logic
+├── go.mod
+└── README.md
+```
 
-7. Didn't have any real integration tests - the only ones I added are in the repo layer. Again time issue though ideally this would be done via something like Jenkins as a smoke test.
+## License
 
-## Improvements
-1. Would have been nice to add a cache like Redis or an in-memory cache to improve the scalability of the application. When checking for available rooms for a date, we can use something like an LRU cache and when a booking occurs, that date can be updated. This is compounded by the fact that sqlite3 doesn't allow for concurrent access.
-
-2. Improve the database, either going to mySQL or Postgres. I could have set some options to improve the performance of sqlite but didn't have time to look into it in detail. But ultimately, a production ready database would be preferred.
-
-3. For security/reliability - a rate limiter would also be nice to ensure our service is protected against heavy or even malicious use. 
+This project is licensed under the MIT License. 
