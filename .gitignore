@@ -1,1 +1,3 @@
 booking_room.db
+booking-room
+internal/db/*_test.db

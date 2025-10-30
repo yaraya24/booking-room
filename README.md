@@ -2,13 +2,15 @@
 
 ### Requirements:
 - Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+- Sqlite3 (gcc is necessary and set environment variable CGO_ENABLED=1)
 
 ### Installation
 
 
 1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```rr
+```
+git clone git@github.com:yaraya24/booking-room.git
+```
 
 2. Setup the database 
 
@@ -28,7 +30,7 @@ go build ./cmd
 ### Usage
 
 You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
+Users are outlined in the setup-db.sql file where each user has the password `password`.
 ```
 Jane:password
 John:password
