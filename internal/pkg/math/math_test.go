@@ -20,6 +20,12 @@ func TestAdd(t *testing.T) {
 			expected: 4,
 		},
 		{
+			name:     "add 23 + 23",
+			a:        23,
+			b:        23,
+			expected: 46,
+		},
+		{
 			name:     "add positive numbers",
 			a:        5,
 			b:        3,
