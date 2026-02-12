@@ -10,4 +10,4 @@ Golang was chosen for this project for several key reasons:
 - **Standard Library**: Rich standard library with robust HTTP server capabilities and database/sql package
 - **Fast Compilation**: Quick build times enable rapid development and iteration
 - **Static Typing**: Type safety helps catch errors at compile time, reducing runtime bugs
-- **Deployment**: Single binary compilation makes deployment simple and dependency management straightforward 
+- **Deployment**: Single binary compilation makes deployment simple and dependency management straightforward
