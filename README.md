@@ -1,5 +1,7 @@
 # Book Meeting Room Backend
 
+**Note:** This project does not have any npm package dependencies as it is built entirely with Go.
+
 ### Requirements:
 - Golang 
 - Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
