@@ -19,6 +19,7 @@ sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
 ```
 go run cmd/main.go 
 ```
+   To finish the server, press `Ctrl+C` in the terminal.
 
 4. Or you can build the app to be an executable that can then be run:
 ```
