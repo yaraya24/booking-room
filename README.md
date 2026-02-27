@@ -1,5 +1,9 @@
 # Book Meeting Room Backend
 
+## About
+
+This is a simple backend API for booking meeting rooms. It allows users to reserve available rooms for a specific date and check which rooms are still free. Access is protected with basic authentication, so only registered users can make or view bookings.
+
 ### Requirements:
 - Golang 
 - Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
