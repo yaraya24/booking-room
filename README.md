@@ -9,7 +9,7 @@
 
 1. Clone the repo
 ````clone git@github.com:yaraya24/booking-room.git```rr
-
+fafewaf
 2. Setup the database 
 
 ```
