@@ -1,0 +1,26 @@
+name: Review Deployment
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    environment: production-review
+    steps:
+      - name: deploy
+        run: sleep 10; echo Hello, world!
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
