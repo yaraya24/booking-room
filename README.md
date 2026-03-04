@@ -19,7 +19,7 @@ sqlite3 ./booking_room.db < ./internal/db/setup-db.sqlda
 ```
 go run cmd/main.go 
 ```
-
+adad
 4. Or you can build the app to be an executable that can then be run:
 ```
 go build ./cmd
