@@ -13,13 +13,13 @@
 2. Setup the database 
 
 ```
-sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
+sqlite3 ./booking_room.db < ./internal/db/setup-db.sqlda
 ```
-3. you can then run the server using 
+3. you can then run the server using fsfsf
 ```
 go run cmd/main.go 
 ```
-
+adad
 4. Or you can build the app to be an executable that can then be run:
 ```
 go build ./cmd
