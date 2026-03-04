@@ -13,7 +13,7 @@
 2. Setup the database 
 
 ```
-sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
+sqlite3 ./booking_room.db < ./internal/db/setup-db.sqlda
 ```
 3. you can then run the server using 
 ```
