@@ -6,6 +6,7 @@
 
 ### Installation
 
+START
 
 1. Clone the repo
 ````clone git@github.com:yaraya24/booking-room.git```rr
