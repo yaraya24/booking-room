@@ -14,7 +14,7 @@
 
 ```
 sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
-```
+```rr
 3. you can then run the server using 
 ```
 go run cmd/main.go 
