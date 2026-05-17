@@ -1,71 +1,154 @@
-# Book Meeting Room Backend
+# Booking Room API
 
-### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+Small Go API for checking which meeting rooms are still free on a given day and booking a room for an authenticated user.
 
-### Installation
+## What the app does
 
+- exposes an HTTP API on `http://localhost:8080`
+- requires HTTP Basic Auth on every request
+- lets you list available rooms for a date
+- lets you book a room for a date
+- stores data in a local SQLite database
 
-1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```rr
+The seeded database includes these rooms:
 
-2. Setup the database 
+- `A`
+- `B`
+- `C`
+- `D`
 
-```
+## Requirements
+
+- Go 1.19+
+- SQLite 3
+- CGO-enabled Go build environment (`github.com/mattn/go-sqlite3` requires this)
+
+## Getting started
+
+1. Clone the repository.
+2. Create the SQLite database from the seed script:
+
+```bash
 sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
 ```
-3. you can then run the server using 
-```
-go run cmd/main.go 
+
+3. Start the API:
+
+```bash
+go run ./cmd
 ```
 
-4. Or you can build the app to be an executable that can then be run:
-```
-go build ./cmd
+The server listens on `0.0.0.0:8080`.
+
+## Authentication
+
+Every endpoint uses HTTP Basic Auth.
+
+The seed script creates these users, all with password `password`:
+
+- `Jane`
+- `Sarah`
+- `John`
+
+Example auth header with `curl`:
+
+```bash
+curl -u Jane:password http://localhost:8080/bookings?date=2026-05-20
 ```
 
-### Usage
+## API usage
 
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
-```
-Jane:password
-John:password
-Sarah:password
+### Get available rooms
+
+Returns the rooms that are not yet booked for a future or current date.
+
+**Request**
+
+```bash
+curl -u Jane:password "http://localhost:8080/bookings?date=2026-05-20"
 ```
 
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
+**Query parameters**
 
-example:
-```
+- `date` - required, format: `YYYY-MM-DD`
+
+**Successful response**
+
+```json
 {
-	"date": "2024-10-10",
-	"room": "D"
+  "available_rooms": {
+    "rooms": [
+      { "name": "A" },
+      { "name": "B" },
+      { "name": "D" }
+    ],
+    "date": "2026-05-20"
+  }
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+### Create a booking
 
-## Bugs/Problems
-1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
+Books a room for the authenticated user.
 
-2. I'm missing some validation for when users make a POST request
+**Request**
 
-3. I had decided to use an sql file to setup the database and consequently I wasn't able to hash the passwords. They are now stored in plaintext which is not okay.
+```bash
+curl -u Jane:password \
+  -X POST http://localhost:8080/bookings \
+  -H "Content-Type: application/json" \
+  -d '{"date":"2026-05-20","room":"D"}'
+```
 
-4. We don't have any meta columns in our databases like updated and created timestamps
+**Body**
 
-5. We don't ping the database to make sure that it actually runs
+```json
+{
+  "date": "2026-05-20",
+  "room": "D"
+}
+```
 
-6. I wanted to have middleware that provides logging of the request, request-id, response status, etc but I didn't have time.
+- `date` is required and must use `YYYY-MM-DD`
+- `room` is required
 
-7. Didn't have any real integration tests - the only ones I added are in the repo layer. Again time issue though ideally this would be done via something like Jenkins as a smoke test.
+**Successful response**
 
-## Improvements
-1. Would have been nice to add a cache like Redis or an in-memory cache to improve the scalability of the application. When checking for available rooms for a date, we can use something like an LRU cache and when a booking occurs, that date can be updated. This is compounded by the fact that sqlite3 doesn't allow for concurrent access.
+- status: `201 Created`
+- empty response body
 
-2. Improve the database, either going to mySQL or Postgres. I could have set some options to improve the performance of sqlite but didn't have time to look into it in detail. But ultimately, a production ready database would be preferred.
+## Error behavior
 
-3. For security/reliability - a rate limiter would also be nice to ensure our service is protected against heavy or even malicious use. 
+The API returns JSON errors for handler-level failures, for example:
+
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "room has already been booked"
+  }
+}
+```
+
+Common cases:
+
+- `400 Bad Request` for invalid dates, past dates, or duplicate bookings
+- `401 Unauthorized` when credentials are missing or invalid
+- `500 Internal Server Error` with message `Oops, something went wrong` for unexpected failures
+
+## Validation
+
+Run the existing checks from the repository root:
+
+```bash
+go test ./...
+go build ./...
+```
+
+## Current limitations
+
+These behaviors are present in the current implementation:
+
+- bookings are protected only by seeded Basic Auth credentials stored in plaintext
+- the booking flow does not verify that the requested room exists in the `rooms` table
+- there is only one SQLite database file intended for local use
