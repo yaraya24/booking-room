@@ -1,52 +1,101 @@
 # Book Meeting Room Backend
 
-### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+A REST API backend for booking meeting rooms. Users can check which rooms are available on a given date and make bookings. The app uses SQLite for storage and HTTP Basic Auth for authentication.
 
-### Installation
+## Requirements
 
+- Go
+- SQLite3 (GCC is required; set the environment variable `CGO_ENABLED=1`)
 
-1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```rr
+## Installation
 
-2. Setup the database 
+1. Clone the repo:
+   ```
+   git clone git@github.com:yaraya24/booking-room.git
+   cd booking-room
+   ```
 
-```
-sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
-```
-3. you can then run the server using 
-```
-go run cmd/main.go 
-```
+2. Set up the database:
+   ```
+   sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
+   ```
 
-4. Or you can build the app to be an executable that can then be run:
-```
-go build ./cmd
-```
+3. Run the server:
+   ```
+   go run cmd/main.go
+   ```
 
-### Usage
+   Or build an executable first, then run it:
+   ```
+   go build ./cmd
+   ./cmd
+   ```
 
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
+The server listens on `http://localhost:8080`.
+
+## Usage
+
+All endpoints require **HTTP Basic Auth**. The database is seeded with the following users (password is `password` for all):
+
 ```
 Jane:password
 John:password
 Sarah:password
 ```
 
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
+The available rooms are **A**, **B**, **C**, and **D**.
 
-example:
+### Check available rooms
+
+Returns all rooms that have not been booked on the given date.
+
 ```
+GET /bookings?date=YYYY-MM-DD
+```
+
+Example request:
+```
+curl -u Jane:password "http://localhost:8080/bookings?date=2024-10-10"
+```
+
+Example response:
+```json
 {
-	"date": "2024-10-10",
-	"room": "D"
+  "available_rooms": {
+    "rooms": [
+      { "name": "A" },
+      { "name": "B" },
+      { "name": "C" },
+      { "name": "D" }
+    ],
+    "date": "2024-10-10"
+  }
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+### Book a room
+
+Books the specified room for the authenticated user on the given date. Returns `201 Created` on success.
+
+```
+POST /bookings
+Content-Type: application/json
+```
+
+Request body:
+```json
+{
+  "room": "D",
+  "date": "2024-10-10"
+}
+```
+
+Example request:
+```
+curl -u Jane:password -X POST http://localhost:8080/bookings \
+  -H "Content-Type: application/json" \
+  -d '{"room": "D", "date": "2024-10-10"}'
+```
 
 ## Bugs/Problems
 1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
