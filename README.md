@@ -1,52 +1,103 @@
 # Book Meeting Room Backend
 
-### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+A Go HTTP API for booking meeting rooms. Authenticated users can check which rooms are available on a given date and reserve a room for themselves.
+
+There are four rooms (A, B, C, D). Each room can only be booked once per day — attempting to book an already-taken room returns an error.
+
+### Requirements
+- Go 1.18+
+- SQLite3 (`gcc` is required; set the environment variable `CGO_ENABLED=1`)
 
 ### Installation
 
-
 1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```rr
+   ```
+   git clone git@github.com:yaraya24/booking-room.git
+   cd booking-room
+   ```
 
-2. Setup the database 
+2. Set up the database
+   ```
+   sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
+   ```
 
-```
-sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
-```
-3. you can then run the server using 
-```
-go run cmd/main.go 
-```
+3. Run the server
+   ```
+   go run cmd/main.go
+   ```
+   The server listens on `http://localhost:8080`.
 
-4. Or you can build the app to be an executable that can then be run:
-```
-go build ./cmd
-```
+   Alternatively, build an executable first:
+   ```
+   go build -o booking-room ./cmd
+   ./booking-room
+   ```
 
 ### Usage
 
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
+All endpoints require **HTTP Basic Auth**. The `setup-db.sql` file seeds three users, each with the password `password`:
+
+| Username | Password |
+|----------|----------|
+| Jane     | password |
+| Sarah    | password |
+| John     | password |
+
+---
+
+#### Check available rooms
+
+Returns all rooms that have not yet been booked for the given date.
+
 ```
-Jane:password
-John:password
-Sarah:password
+GET http://localhost:8080/bookings?date=YYYY-MM-DD
 ```
 
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
-
-example:
+Example request:
 ```
+GET http://localhost:8080/bookings?date=2024-10-10
+Authorization: Basic <base64(Jane:password)>
+```
+
+Example response (`200 OK`):
+```json
 {
-	"date": "2024-10-10",
-	"room": "D"
+  "available_rooms": {
+    "rooms": [
+      {"name": "A"},
+      {"name": "B"},
+      {"name": "C"},
+      {"name": "D"}
+    ],
+    "date": "2024-10-10"
+  }
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+---
+
+#### Book a room
+
+Books the specified room for the authenticated user on the given date. Each room can only be booked once per day.
+
+```
+POST http://localhost:8080/bookings
+Content-Type: application/json
+Authorization: Basic <base64(Jane:password)>
+```
+
+Request body:
+```json
+{
+  "date": "2024-10-10",
+  "room": "A"
+}
+```
+
+- `date` — date in `YYYY-MM-DD` format
+- `room` — room name: `A`, `B`, `C`, or `D`
+
+A successful booking returns `201 Created` with no body. Attempting to book a room that is already taken returns `400 Bad Request`.
 
 ## Bugs/Problems
 1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
@@ -68,4 +119,4 @@ Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}`
 
 2. Improve the database, either going to mySQL or Postgres. I could have set some options to improve the performance of sqlite but didn't have time to look into it in detail. But ultimately, a production ready database would be preferred.
 
-3. For security/reliability - a rate limiter would also be nice to ensure our service is protected against heavy or even malicious use. 
+3. For security/reliability - a rate limiter would also be nice to ensure our service is protected against heavy or even malicious use.
