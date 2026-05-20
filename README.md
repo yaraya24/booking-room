@@ -1,52 +1,81 @@
 # Book Meeting Room Backend
 
-### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+A REST API backend for booking meeting rooms. It allows authenticated users to check which rooms are available on a given date and to make a booking for a room.
+
+The available rooms are **A**, **B**, **C**, and **D**. Each room can only be booked once per day.
+
+### Requirements
+- Go 1.19+
+- SQLite3 (GCC is required; set the environment variable `CGO_ENABLED=1`)
 
 ### Installation
 
+1. Clone the repo:
+```
+git clone git@github.com:yaraya24/booking-room.git
+```
 
-1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```rr
-
-2. Setup the database 
-
+2. Set up the database:
 ```
 sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
 ```
-3. you can then run the server using 
+
+3. Run the server:
 ```
-go run cmd/main.go 
+go run cmd/main.go
 ```
 
-4. Or you can build the app to be an executable that can then be run:
+4. Or build an executable and run it:
 ```
 go build ./cmd
+./cmd
 ```
+
+The server listens on `http://localhost:8080`.
 
 ### Usage
 
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
+All endpoints require **Basic Auth**. The users seeded by `setup-db.sql` are:
 ```
 Jane:password
 John:password
 Sarah:password
 ```
 
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
+#### Check available rooms
 
-example:
+`GET localhost:8080/bookings?date=YYYY-MM-DD`
+
+Returns the list of rooms that have not yet been booked on the given date.
+
+Example request:
 ```
+GET localhost:8080/bookings?date=2024-10-10
+```
+
+Example response:
+```json
 {
-	"date": "2024-10-10",
-	"room": "D"
+  "available_rooms": {
+    "rooms": [{"name": "A"}, {"name": "B"}, {"name": "C"}, {"name": "D"}],
+    "date": "2024-10-10"
+  }
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+#### Book a room
+
+`POST localhost:8080/bookings`
+
+Books a room for the authenticated user on the specified date. The request body must include a `room` (one of A, B, C, D) and a `date` in `YYYY-MM-DD` format.
+
+Example request body:
+```json
+{
+  "date": "2024-10-10",
+  "room": "D"
+}
+```
 
 ## Bugs/Problems
 1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
