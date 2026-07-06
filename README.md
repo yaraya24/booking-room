@@ -69,3 +69,5 @@ Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}`
 2. Improve the database, either going to mySQL or Postgres. I could have set some options to improve the performance of sqlite but didn't have time to look into it in detail. But ultimately, a production ready database would be preferred.
 
 3. For security/reliability - a rate limiter would also be nice to ensure our service is protected against heavy or even malicious use. 
+
+FINISH
