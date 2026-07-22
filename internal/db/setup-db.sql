@@ -20,9 +20,11 @@ CREATE TABLE bookings (
     UNIQUE(room, date)
 );
 
-INSERT INTO users (username, password) VALUES ('Jane', 'password');
-INSERT INTO users (username, password) VALUES ('Sarah', 'password');
-INSERT INTO users (username, password) VALUES ('John', 'password');
+-- Passwords below are bcrypt hashes of the plaintext password `password`.
+-- Never store plaintext passwords in the database.
+INSERT INTO users (username, password) VALUES ('Jane', '$2a$10$ooJCQ9EMNI60bVzsP7QhTucsTdxgcy6171Ei6ziCTKeEL5XnJoJNi');
+INSERT INTO users (username, password) VALUES ('Sarah', '$2a$10$ooJCQ9EMNI60bVzsP7QhTucsTdxgcy6171Ei6ziCTKeEL5XnJoJNi');
+INSERT INTO users (username, password) VALUES ('John', '$2a$10$ooJCQ9EMNI60bVzsP7QhTucsTdxgcy6171Ei6ziCTKeEL5XnJoJNi');
 
 INSERT INTO rooms (name) VALUES ('A');
 INSERT INTO rooms (name) VALUES ('B');
