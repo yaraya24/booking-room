@@ -1,12 +1,13 @@
 module github.com/yaraya24/book-meeting-room
 
-go 1.19
+go 1.25.0
 
 require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.7.0
+	golang.org/x/crypto v0.17.0
 )
 
 require (
@@ -18,5 +19,5 @@ require (
 
 require (
 	github.com/gorilla/mux v1.8.1
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
 )

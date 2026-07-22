@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/yaraya24/book-meeting-room/internal/domain"
 	"github.com/yaraya24/book-meeting-room/internal/pkg/logging"
 )
@@ -32,7 +34,7 @@ func (a AuthenticationMiddlware) ServeHTTP(next http.Handler) http.Handler {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		if user.Password != password {
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
