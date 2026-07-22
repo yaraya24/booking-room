@@ -27,3 +27,15 @@ func (b BookRoomRepo) BookRoom(ctx context.Context, room string, user int, date 
 	}
 	return nil
 }
+
+// RoomExists checks whether a room with the given name exists in the rooms table.
+func (b BookRoomRepo) RoomExists(ctx context.Context, room string) (bool, error) {
+	var rooms []string
+	query := `SELECT name FROM rooms WHERE name = ?`
+
+	err := b.Database.Read(ctx, &rooms, query, room)
+	if err != nil {
+		return false, err
+	}
+	return len(rooms) > 0, nil
+}
