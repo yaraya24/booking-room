@@ -9,9 +9,22 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/yaraya24/book-meeting-room/internal/api/mocks"
 	"github.com/yaraya24/book-meeting-room/internal/domain"
 )
+
+// hashPassword is a test helper that returns a bcrypt hash for the given
+// plaintext password, mirroring how passwords are stored in the database.
+func hashPassword(t *testing.T, password string) string {
+	t.Helper()
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		t.Fatalf("unable to hash password: %s", err)
+	}
+	return string(hash)
+}
 
 func TestAuthenticationMiddleware(t *testing.T) {
 	testCases := []struct {
@@ -24,7 +37,7 @@ func TestAuthenticationMiddleware(t *testing.T) {
 		{
 			name:               "Successful authentication",
 			requestHeader:      "Basic " + base64.StdEncoding.EncodeToString([]byte("user1:password")),
-			mockUser:           domain.User{ID: 1, Username: "user1", Password: "password"},
+			mockUser:           domain.User{ID: 1, Username: "user1", Password: hashPassword(t, "password")},
 			mockError:          nil,
 			expectedStatusCode: http.StatusOK,
 		},
@@ -45,7 +58,7 @@ func TestAuthenticationMiddleware(t *testing.T) {
 		{
 			name:               "Incorrect password",
 			requestHeader:      "Basic " + base64.StdEncoding.EncodeToString([]byte("user1:passwordwrong")),
-			mockUser:           domain.User{ID: 1, Username: "user1", Password: "password1"},
+			mockUser:           domain.User{ID: 1, Username: "user1", Password: hashPassword(t, "password1")},
 			mockError:          nil,
 			expectedStatusCode: http.StatusUnauthorized,
 		},
