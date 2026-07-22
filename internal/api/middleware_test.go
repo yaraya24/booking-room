@@ -11,9 +11,19 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/yaraya24/book-meeting-room/internal/api/mocks"
 	"github.com/yaraya24/book-meeting-room/internal/domain"
+	"github.com/yaraya24/book-meeting-room/internal/pkg/password"
 )
 
 func TestAuthenticationMiddleware(t *testing.T) {
+	hashedPassword, err := password.Hash("password")
+	if err != nil {
+		t.Fatalf("unable to hash password: %v", err)
+	}
+	hashedPassword1, err := password.Hash("password1")
+	if err != nil {
+		t.Fatalf("unable to hash password: %v", err)
+	}
+
 	testCases := []struct {
 		name               string
 		requestHeader      string
@@ -24,7 +34,7 @@ func TestAuthenticationMiddleware(t *testing.T) {
 		{
 			name:               "Successful authentication",
 			requestHeader:      "Basic " + base64.StdEncoding.EncodeToString([]byte("user1:password")),
-			mockUser:           domain.User{ID: 1, Username: "user1", Password: "password"},
+			mockUser:           domain.User{ID: 1, Username: "user1", Password: hashedPassword},
 			mockError:          nil,
 			expectedStatusCode: http.StatusOK,
 		},
@@ -45,7 +55,7 @@ func TestAuthenticationMiddleware(t *testing.T) {
 		{
 			name:               "Incorrect password",
 			requestHeader:      "Basic " + base64.StdEncoding.EncodeToString([]byte("user1:passwordwrong")),
-			mockUser:           domain.User{ID: 1, Username: "user1", Password: "password1"},
+			mockUser:           domain.User{ID: 1, Username: "user1", Password: hashedPassword1},
 			mockError:          nil,
 			expectedStatusCode: http.StatusUnauthorized,
 		},

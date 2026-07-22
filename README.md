@@ -53,7 +53,7 @@ Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}`
 
 2. I'm missing some validation for when users make a POST request
 
-3. I had decided to use an sql file to setup the database and consequently I wasn't able to hash the passwords. They are now stored in plaintext which is not okay.
+3. ~~I had decided to use an sql file to setup the database and consequently I wasn't able to hash the passwords. They are now stored in plaintext which is not okay.~~ Fixed: passwords are now hashed with bcrypt at rest and compared using `bcrypt.CompareHashAndPassword`.
 
 4. We don't have any meta columns in our databases like updated and created timestamps
 

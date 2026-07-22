@@ -6,6 +6,7 @@ import (
 
 	"github.com/yaraya24/book-meeting-room/internal/domain"
 	"github.com/yaraya24/book-meeting-room/internal/pkg/logging"
+	"github.com/yaraya24/book-meeting-room/internal/pkg/password"
 )
 
 type AuthenticationMiddlware struct {
@@ -22,7 +23,7 @@ func NewAuthenticationMiddleware(repo AuthenticationRepo) AuthenticationMiddlwar
 
 func (a AuthenticationMiddlware) ServeHTTP(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		username, password, ok := r.BasicAuth()
+		username, providedPassword, ok := r.BasicAuth()
 		if !ok {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -32,7 +33,7 @@ func (a AuthenticationMiddlware) ServeHTTP(next http.Handler) http.Handler {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		if user.Password != password {
+		if !password.Matches(user.Password, providedPassword) {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
