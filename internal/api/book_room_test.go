@@ -56,6 +56,14 @@ func TestBookRoom(t *testing.T) {
 			expectedResponseBody: `{"error":{"code":500,"message":"Oops, something went wrong"}}`,
 			expectedStatusCode:   http.StatusInternalServerError,
 		},
+		{
+			name:                 "Provide a room that doesn't exist - expect 400 error",
+			userID:               1,
+			requestBody:          `{"date":"2025-01-01","room":"Room 1"}`,
+			mockError:            errors.CustomError{Code: errors.InvalidRoom, Message: "room does not exist"},
+			expectedResponseBody: `{"error":{"code":400,"message":"room does not exist"}}`,
+			expectedStatusCode:   http.StatusBadRequest,
+		},
 	}
 
 	for _, tc := range testCases {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBookRoom(t *testing.T) {
@@ -49,6 +51,42 @@ func TestBookRoom(t *testing.T) {
 					t.Errorf("Did not expect error, got: %v", err)
 				}
 			}
+		})
+	}
+}
+
+func TestRoomExists(t *testing.T) {
+	testCases := []struct {
+		name           string
+		room           string
+		expectedExists bool
+	}{
+		{
+			name:           "Room exists",
+			room:           "A",
+			expectedExists: true,
+		},
+		{
+			name:           "Room does not exist",
+			room:           "Nonexistent Room",
+			expectedExists: false,
+		},
+	}
+
+	db, err := testDB()
+	if err != nil {
+		t.Fatalf("unable to connect to DB")
+	}
+	defer db.DB.Close()
+	repo := NewBookRoomsRepo(db)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			exists, err := repo.RoomExists(context.Background(), tc.room)
+			if err != nil {
+				t.Fatalf("did not expect error, got: %v", err)
+			}
+			assert.Equal(t, tc.expectedExists, exists)
 		})
 	}
 }
