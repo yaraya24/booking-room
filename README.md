@@ -1,5 +1,7 @@
 # Book Meeting Room Backend
 
+START
+
 ### Requirements:
 - Golang 
 - Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
