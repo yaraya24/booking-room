@@ -1,44 +1,43 @@
-# Book Meeting Room Backend
+# 会议室预订后端
 
-### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+### 环境要求：
+- Golang
+- Sqlite3（需要 gcc，并设置环境变量 CGO_ENABLED=1）
 
-### Installation
+### 安装
 
-
-1. Clone the repo
+1. 克隆仓库
 ````clone git@github.com:yaraya24/booking-room.git```rr
 
-2. Setup the database 
+2. 设置数据库
 
 ```
 sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
 ```
-3. you can then run the server using 
+3. 然后你可以使用以下命令运行服务器
 ```
 go run cmd/main.go 
 ```
 
-4. Or you can build the app to be an executable that can then be run:
+4. 或者你可以将应用构建为可执行文件后再运行：
 ```
 go build ./cmd
 ```
 
-### Usage
+### 使用方法
 
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
+你需要使用 Basic Auth 来访问该 API。
+用户信息记录在 setub-db.sql 文件中，每个用户的密码都是 `password`。
 ```
 Jane:password
 John:password
 Sarah:password
 ```
 
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
+创建预订可以通过 `POST localhost:8080/bookings` 接口完成。
+请求体中需要包含 `room` 和 `date`，日期格式必须为 `YYYY/MM/DD`。
 
-example:
+示例：
 ```
 {
 	"date": "2024-10-10",
@@ -46,26 +45,26 @@ example:
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+查看可用房间可以通过 `GET localhost:8080/bookings?{date}` 访问，其中 date 的格式为 `YYYY/MM/DD`。
 
-## Bugs/Problems
-1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
+## 已知缺陷/问题
+1. 存在一个比较严重的漏洞：用户能够预订不存在的房间。这是因为应用在创建预订前没有检查房间是否存在，而是盲目信任客户端。（发现得有点晚。）
 
-2. I'm missing some validation for when users make a POST request
+2. 缺少一些用户发起 POST 请求时的校验逻辑。
 
-3. I had decided to use an sql file to setup the database and consequently I wasn't able to hash the passwords. They are now stored in plaintext which is not okay.
+3. 由于我使用 sql 文件来初始化数据库，导致我无法对密码进行哈希处理。密码目前以明文形式存储，这是不可接受的。
 
-4. We don't have any meta columns in our databases like updated and created timestamps
+4. 数据库中没有任何元数据字段，比如更新时间和创建时间戳。
 
-5. We don't ping the database to make sure that it actually runs
+5. 我们没有对数据库进行 ping 检测以确保其确实在正常运行。
 
-6. I wanted to have middleware that provides logging of the request, request-id, response status, etc but I didn't have time.
+6. 我本想添加中间件来记录请求日志、request-id、响应状态码等信息，但没有时间实现。
 
-7. Didn't have any real integration tests - the only ones I added are in the repo layer. Again time issue though ideally this would be done via something like Jenkins as a smoke test.
+7. 没有真正的集成测试——目前只在 repo 层添加了一些测试。同样是时间问题，理想情况下应该通过类似 Jenkins 的工具作为冒烟测试来完成。
 
-## Improvements
-1. Would have been nice to add a cache like Redis or an in-memory cache to improve the scalability of the application. When checking for available rooms for a date, we can use something like an LRU cache and when a booking occurs, that date can be updated. This is compounded by the fact that sqlite3 doesn't allow for concurrent access.
+## 可改进之处
+1. 如果能加入像 Redis 这样的缓存，或者内存缓存，会有助于提升应用的可扩展性。在查询某个日期的可用房间时，可以使用类似 LRU 缓存的机制，当发生预订时再更新对应日期的数据。这一点在 sqlite3 不支持并发访问的情况下显得更加重要。
 
-2. Improve the database, either going to mySQL or Postgres. I could have set some options to improve the performance of sqlite but didn't have time to look into it in detail. But ultimately, a production ready database would be preferred.
+2. 改进数据库，迁移到 MySQL 或 Postgres。我本可以调整一些配置来提升 sqlite 的性能，但没有时间深入研究。不过归根结底，还是更推荐使用生产级别的数据库。
 
-3. For security/reliability - a rate limiter would also be nice to ensure our service is protected against heavy or even malicious use. 
+3. 出于安全性/可靠性考虑，加入限流器（rate limiter）也会很有帮助，以确保我们的服务能够抵御高负载甚至恶意使用。
