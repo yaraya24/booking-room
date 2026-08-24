@@ -1,44 +1,44 @@
-# Book Meeting Room Backend
+# Backend de Reservation de Salles de Reunion
 
-### Requirements:
+### Prerequis :
 - Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+- Sqlite3 (gcc est necessaire et il faut definir la variable d'environnement CGO_ENABLED=1)
 
 ### Installation
 
 
-1. Clone the repo
+1. Clonez le depot
 ````clone git@github.com:yaraya24/booking-room.git```rr
 
-2. Setup the database 
+2. Configurez la base de donnees 
 
 ```
 sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
 ```
-3. you can then run the server using 
+3. vous pouvez ensuite lancer le serveur avec 
 ```
 go run cmd/main.go 
 ```
 
-4. Or you can build the app to be an executable that can then be run:
+4. Ou vous pouvez compiler l'application en un executable qui pourra ensuite etre lance :
 ```
 go build ./cmd
 ```
 
-### Usage
+### Utilisation
 
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
+Vous devrez utiliser l'authentification Basic Auth pour acceder a l'API.
+Les utilisateurs sont listes dans le fichier setub-db.sql, ou chaque utilisateur a le mot de passe `password`.
 ```
 Jane:password
 John:password
 Sarah:password
 ```
 
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
+La creation d'une reservation se fait via l'endpoint `POST localhost:8080/bookings`
+Il faut un corps de requete avec `room` et `date`. La date doit etre au format `YYYY/MM/DD`
 
-example:
+exemple :
 ```
 {
 	"date": "2024-10-10",
@@ -46,26 +46,26 @@ example:
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+La consultation des salles disponibles se fait via `GET localhost:8080/bookings?{date}` ou date est au format `YYYY/MM/DD`.
 
-## Bugs/Problems
-1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
+## Bugs/Problemes
+1. Il y a un bug assez serieux : les utilisateurs peuvent reserver des salles qui n'existent pas. Cela vient du fait que l'application ne verifie pas l'existence de la salle avant d'effectuer la reservation et fait aveuglement confiance au client (je m'en suis rendu compte un peu trop tard).
 
-2. I'm missing some validation for when users make a POST request
+2. Il me manque de la validation pour les requetes POST des utilisateurs
 
-3. I had decided to use an sql file to setup the database and consequently I wasn't able to hash the passwords. They are now stored in plaintext which is not okay.
+3. J'avais decide d'utiliser un fichier sql pour configurer la base de donnees, et par consequent je n'ai pas pu hacher les mots de passe. Ils sont desormais stockes en clair, ce qui n'est pas correct.
 
-4. We don't have any meta columns in our databases like updated and created timestamps
+4. Nous n'avons aucune colonne meta dans nos bases de donnees, comme les horodatages de creation et de mise a jour
 
-5. We don't ping the database to make sure that it actually runs
+5. Nous ne faisons pas de ping vers la base de donnees pour verifier qu'elle fonctionne bien
 
-6. I wanted to have middleware that provides logging of the request, request-id, response status, etc but I didn't have time.
+6. J'aurais voulu avoir un middleware fournissant la journalisation des requetes, le request-id, le statut de la reponse, etc., mais je n'ai pas eu le temps.
 
-7. Didn't have any real integration tests - the only ones I added are in the repo layer. Again time issue though ideally this would be done via something like Jenkins as a smoke test.
+7. Je n'ai pas de veritables tests d'integration : les seuls que j'ai ajoutes se trouvent dans la couche repository. La encore, faute de temps, meme si idealement cela devrait etre fait via quelque chose comme Jenkins en tant que smoke test.
 
-## Improvements
-1. Would have been nice to add a cache like Redis or an in-memory cache to improve the scalability of the application. When checking for available rooms for a date, we can use something like an LRU cache and when a booking occurs, that date can be updated. This is compounded by the fact that sqlite3 doesn't allow for concurrent access.
+## Ameliorations
+1. Il aurait ete interessant d'ajouter un cache comme Redis ou un cache en memoire pour ameliorer la scalabilite de l'application. Lors de la verification des salles disponibles pour une date, on pourrait utiliser quelque chose comme un cache LRU, et lorsqu'une reservation a lieu, cette date pourrait etre mise a jour. Cela est aggrave par le fait que sqlite3 ne permet pas l'acces concurrent.
 
-2. Improve the database, either going to mySQL or Postgres. I could have set some options to improve the performance of sqlite but didn't have time to look into it in detail. But ultimately, a production ready database would be preferred.
+2. Ameliorer la base de donnees, en passant a mySQL ou Postgres. J'aurais pu configurer certaines options pour ameliorer les performances de sqlite, mais je n'ai pas eu le temps d'approfondir. En fin de compte, une base de donnees prete pour la production serait preferable.
 
-3. For security/reliability - a rate limiter would also be nice to ensure our service is protected against heavy or even malicious use. 
+3. Pour la securite/fiabilite - un limiteur de debit (rate limiter) serait egalement utile pour garantir que notre service est protege contre une utilisation intensive ou meme malveillante.
