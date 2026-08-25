@@ -33,9 +33,11 @@ func NewServer(db *db.Database) (*http.Server, error) {
 	services := buildServices(repos)
 	handlers := buildHandlers(services)
 
-	middleware := NewAuthenticationMiddleware(repos.FindUser)
+	loggingMiddleware := NewLoggingMiddleware()
+	authMiddleware := NewAuthenticationMiddleware(repos.FindUser)
 
-	router.Use(middleware.ServeHTTP)
+	router.Use(loggingMiddleware.ServeHTTP)
+	router.Use(authMiddleware.ServeHTTP)
 	router.Handle("/bookings", handlers.GetAvailableRooms).Methods(http.MethodGet)
 	router.Handle("/bookings", handlers.BookRoom).Methods(http.MethodPost)
 

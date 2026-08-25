@@ -75,3 +75,24 @@ func TestAuthenticationMiddleware(t *testing.T) {
 		})
 	}
 }
+
+func TestLoggingMiddleware(t *testing.T) {
+	middleware := NewLoggingMiddleware()
+
+	req, err := http.NewRequest(http.MethodGet, "/bookings", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusTeapot)
+	})
+
+	handler := middleware.ServeHTTP(nextHandler)
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusTeapot, rr.Code)
+	assert.NotEmpty(t, rr.Header().Get("X-Request-Id"))
+}
