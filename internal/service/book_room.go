@@ -10,15 +10,20 @@ import (
 )
 
 type BookRoomService struct {
-	Repo BookRoomRepo
+	Repo       BookRoomRepo
+	RoomFinder RoomExistsChecker
 }
 
 type BookRoomRepo interface {
 	BookRoom(ctx context.Context, room string, user int, date time.Time) error
 }
 
-func NewBookRoomService(repo BookRoomRepo) BookRoomService {
-	return BookRoomService{Repo: repo}
+type RoomExistsChecker interface {
+	RoomExists(ctx context.Context, room string) (bool, error)
+}
+
+func NewBookRoomService(repo BookRoomRepo, roomFinder RoomExistsChecker) BookRoomService {
+	return BookRoomService{Repo: repo, RoomFinder: roomFinder}
 }
 
 func (b BookRoomService) BookAvailableRoom(ctx context.Context, room string, user int, date time.Time) error {
@@ -31,8 +36,17 @@ func (b BookRoomService) BookAvailableRoom(ctx context.Context, room string, use
 	if date.Before(today) {
 		return customErr.CustomError{Code: customErr.InvalidDate, Message: "unable to book a date in the past"}
 	}
+
+	exists, err := b.RoomFinder.RoomExists(ctx, room)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return customErr.CustomError{Code: customErr.InvalidRoom, Message: "room does not exist"}
+	}
+
 	var sqlErr sq3.Error
-	err := b.Repo.BookRoom(ctx, room, user, date)
+	err = b.Repo.BookRoom(ctx, room, user, date)
 	if err != nil {
 		if errors.As(err, &sqlErr) && sqlErr.Code == sq3.ErrConstraint {
 			return customErr.CustomError{Code: customErr.RoomAlreadyBooked, Message: "room has already been booked"}

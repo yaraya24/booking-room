@@ -36,3 +36,15 @@ func (f FindRoomsRepo) FindRooms(ctx context.Context, date time.Time) ([]domain.
 	}
 	return rooms, nil
 }
+
+// RoomExists checks whether a room with the given name is a real, known room.
+func (f FindRoomsRepo) RoomExists(ctx context.Context, room string) (bool, error) {
+	var scanRooms []Room
+	query := `SELECT id, name FROM rooms WHERE name = ?`
+
+	err := f.Database.Read(ctx, &scanRooms, query, room)
+	if err != nil {
+		return false, err
+	}
+	return len(scanRooms) > 0, nil
+}

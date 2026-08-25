@@ -58,7 +58,7 @@ func buildHandlers(svc Services) Handlers {
 func buildServices(repo Repos) Services {
 	return Services{
 		AvailableRooms: service.NewGetAvailableRoomsService(repo.FindRooms),
-		BookRoom:       service.NewBookRoomService(repo.BookRoom),
+		BookRoom:       service.NewBookRoomService(repo.BookRoom, repo.FindRooms),
 	}
 }
 
