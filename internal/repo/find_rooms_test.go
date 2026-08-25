@@ -57,3 +57,39 @@ func TestFindRooms(t *testing.T) {
 		})
 	}
 }
+
+func TestRoomExists(t *testing.T) {
+	testCases := []struct {
+		name           string
+		room           string
+		expectedExists bool
+	}{
+		{
+			name:           "Room exists",
+			room:           "A",
+			expectedExists: true,
+		},
+		{
+			name:           "Room does not exist",
+			room:           "Room that doesn't exist",
+			expectedExists: false,
+		},
+	}
+
+	db, err := testDB()
+	if err != nil {
+		t.Fatalf("unable to connect to DB")
+	}
+	defer db.DB.Close()
+	repo := NewFindRoomsRepo(db)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			exists, err := repo.RoomExists(context.Background(), tc.room)
+			if err != nil {
+				t.Errorf("Failed to check if room exists: %v", err)
+			}
+			assert.Equal(t, tc.expectedExists, exists)
+		})
+	}
+}

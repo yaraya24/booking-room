@@ -26,6 +26,7 @@ func TestBookAvailableRoom(t *testing.T) {
 		room             string
 		user             int
 		date             time.Time
+		roomExists       bool
 		mockRepoResponse error
 		expectError      bool
 		expectedError    error
@@ -35,6 +36,7 @@ func TestBookAvailableRoom(t *testing.T) {
 			room:             "Room 1",
 			user:             1,
 			date:             time.Date(time.Now().Year()+1, 1, 1, 0, 0, 0, 0, time.UTC),
+			roomExists:       true,
 			mockRepoResponse: nil,
 			expectError:      false,
 		},
@@ -43,6 +45,7 @@ func TestBookAvailableRoom(t *testing.T) {
 			room:             "Room 1",
 			user:             1,
 			date:             time.Date(time.Now().Year()-1, 1, 1, 0, 0, 0, 0, time.UTC),
+			roomExists:       true,
 			mockRepoResponse: nil,
 			expectError:      true,
 			expectedError:    customErr.CustomError{Code: customErr.InvalidDate, Message: "unable to book a date in the past"},
@@ -52,19 +55,32 @@ func TestBookAvailableRoom(t *testing.T) {
 			room:             "Room 1",
 			user:             1,
 			date:             time.Date(time.Now().Year()+1, 1, 1, 0, 0, 0, 0, time.UTC),
+			roomExists:       true,
 			mockRepoResponse: sqlite3.Error{Code: sqlite3.ErrConstraint},
 			expectError:      true,
 			expectedError:    customErr.CustomError{Code: customErr.RoomAlreadyBooked, Message: "room has already been booked"},
+		},
+		{
+			name:             "Book a room that doesn't exist, expect invalid room error",
+			room:             "Room that doesn't exist",
+			user:             1,
+			date:             time.Date(time.Now().Year()+1, 1, 1, 0, 0, 0, 0, time.UTC),
+			roomExists:       false,
+			mockRepoResponse: nil,
+			expectError:      true,
+			expectedError:    customErr.CustomError{Code: customErr.InvalidRoom, Message: "room does not exist"},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewBookRoomRepo(t)
+			mockRoomFinder := mocks.NewRoomExistsChecker(t)
 
+			mockRoomFinder.On("RoomExists", mock.Anything, tc.room).Maybe().Return(tc.roomExists, nil)
 			mockRepo.On("BookRoom", mock.Anything, tc.room, tc.user, tc.date).Maybe().Return(tc.mockRepoResponse)
 
-			service := NewBookRoomService(mockRepo)
+			service := NewBookRoomService(mockRepo, mockRoomFinder)
 
 			err := service.BookAvailableRoom(context.Background(), tc.room, tc.user, tc.date)
 			assert.ErrorIs(t, err, tc.expectedError)
