@@ -37,7 +37,7 @@ func TestServeHTTP(t *testing.T) {
 			date:                 "invalid-date",
 			mockResponse:         nil,
 			mockError:            nil,
-			expectedResponseBody: `{"error":{"code":400,"message":"please provide date in YYYY/MM/DD format"}}`,
+			expectedResponseBody: `{"error":{"code":400,"message":"please provide date in YYYY-MM-DD format"}}`,
 			expectedStatusCode:   http.StatusBadRequest,
 		},
 		{

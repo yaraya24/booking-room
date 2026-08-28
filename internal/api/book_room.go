@@ -49,7 +49,7 @@ func (b BookRoomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	date, err := time.Parse("2006-01-02", req.Date)
 	if err != nil {
 		log.Error(err)
-		errorResponse(w, APIError{Code: http.StatusBadRequest, Message: "please provide date in YYYY/MM/DD format"})
+		errorResponse(w, APIError{Code: http.StatusBadRequest, Message: "please provide date in YYYY-MM-DD format"})
 		return
 	}
 	err = b.Service.BookAvailableRoom(ctx, req.Room, user, date)

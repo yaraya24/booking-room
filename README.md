@@ -36,7 +36,7 @@ Sarah:password
 ```
 
 Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
+There needs to be body with a `room` and `date`. the date must be in the form `YYYY-MM-DD`
 
 example:
 ```
@@ -46,7 +46,7 @@ example:
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY-MM-DD`.
 
 ## Bugs/Problems
 1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).

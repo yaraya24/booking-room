@@ -31,7 +31,7 @@ func (b AvailableRoomsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	date, err := time.Parse("2006-01-02", dateParam)
 	if err != nil {
 		log.Error(err)
-		errorResponse(w, APIError{Code: http.StatusBadRequest, Message: "please provide date in YYYY/MM/DD format"})
+		errorResponse(w, APIError{Code: http.StatusBadRequest, Message: "please provide date in YYYY-MM-DD format"})
 		return
 	}
 	domainRooms, err := b.Service.GetAvailableRooms(ctx, date)
