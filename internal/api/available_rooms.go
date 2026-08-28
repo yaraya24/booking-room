@@ -46,7 +46,7 @@ func (b AvailableRoomsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var rooms []Room
+	rooms := make([]Room, 0, len(domainRooms))
 	for _, dr := range domainRooms {
 		rooms = append(rooms, Room{Name: dr.Name})
 	}
