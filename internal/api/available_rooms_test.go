@@ -33,6 +33,14 @@ func TestServeHTTP(t *testing.T) {
 			expectedStatusCode:   http.StatusOK,
 		},
 		{
+			name:                 "No rooms available - expect empty array not null",
+			date:                 "2023-01-01",
+			mockResponse:         []domain.Room{},
+			mockError:            nil,
+			expectedResponseBody: `{"available_rooms":{"rooms":[],"date":"2023-01-01"}}`,
+			expectedStatusCode:   http.StatusOK,
+		},
+		{
 			name:                 "Unable to get rooms due to invalid date format - expect 400 error response",
 			date:                 "invalid-date",
 			mockResponse:         nil,
