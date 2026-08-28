@@ -37,7 +37,7 @@ func TestBookRoom(t *testing.T) {
 			userID:               1,
 			requestBody:          `{"date":"invalid-date","room":"Room 1"}`,
 			mockError:            nil,
-			expectedResponseBody: `{"error":{"code":400,"message":"please provide date in YYYY/MM/DD format"}}`,
+			expectedResponseBody: `{"error":{"code":400,"message":"please provide date in YYYY-MM-DD format"}}`,
 			expectedStatusCode:   http.StatusBadRequest,
 		},
 		{
