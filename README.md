@@ -1,71 +1,166 @@
-# Book Meeting Room Backend
+# Booking Room API
 
-### Requirements:
-- Golang 
-- Sqlite3 (gcc is necessary and set environemtn variable CGO_ENABLED=1)
+A small Go API for checking meeting-room availability and booking rooms. The
+service uses SQLite for persistence and HTTP Basic Authentication for access.
 
-### Installation
+## Features
 
+- List rooms available on a given date
+- Book a room for an authenticated user
+- Reject bookings and availability requests for past dates
+- Prevent the same room from being booked twice on the same date
+- Shut down gracefully when the process receives `SIGINT` or `SIGTERM`
 
-1. Clone the repo
-````clone git@github.com:yaraya24/booking-room.git```rr
+## Requirements
 
-2. Setup the database 
+- [Go 1.19 or later](https://go.dev/doc/install)
+- SQLite 3
+- A C compiler such as GCC, because the SQLite driver requires CGO
 
+## Getting started
+
+1. Clone the repository and enter its directory:
+
+   ```bash
+   git clone https://github.com/yaraya24/booking-room.git
+   cd booking-room
+   ```
+
+2. Create and seed the SQLite database:
+
+   ```bash
+   sqlite3 booking_room.db < internal/db/setup-db.sql
+   ```
+
+   The setup script recreates all tables, so running it again will delete
+   existing bookings.
+
+3. Start the API:
+
+   ```bash
+   CGO_ENABLED=1 go run ./cmd
+   ```
+
+   The server listens on `http://localhost:8080`.
+
+To build a binary instead:
+
+```bash
+CGO_ENABLED=1 go build -o booking-room ./cmd
+./booking-room
 ```
-sqlite3 ./booking_room.db < ./internal/db/setup-db.sql
-```
-3. you can then run the server using 
-```
-go run cmd/main.go 
+
+## Authentication
+
+Every endpoint requires HTTP Basic Authentication. The seed data provides
+these development users:
+
+| Username | Password |
+|----------|----------|
+| `Jane`   | `password` |
+| `John`   | `password` |
+| `Sarah`  | `password` |
+
+These credentials are intended for local development only.
+
+## API
+
+Dates use the `YYYY-MM-DD` format.
+
+### List available rooms
+
+```http
+GET /bookings?date=YYYY-MM-DD
 ```
 
-4. Or you can build the app to be an executable that can then be run:
-```
-go build ./cmd
+Example:
+
+```bash
+curl --user Jane:password \
+  "http://localhost:8080/bookings?date=2026-10-10"
 ```
 
-### Usage
+Successful response:
 
-You will need to use Basic Auth to access the API.
-Users are outlined in the setub-db.sql file where each user has the password `password`.
-```
-Jane:password
-John:password
-Sarah:password
-```
-
-Creating a booking can be done using the endpoint `POST localhost:8080/bookings`
-There needs to be body with a `room` and `date`. the date must be in the form `YYYY/MM/DD`
-
-example:
-```
+```json
 {
-	"date": "2024-10-10",
-	"room": "D"
+  "available_rooms": {
+    "rooms": [
+      {
+        "name": "A"
+      },
+      {
+        "name": "B"
+      },
+      {
+        "name": "C"
+      },
+      {
+        "name": "D"
+      }
+    ],
+    "date": "2026-10-10"
+  }
 }
 ```
 
-Viewing available rooms can be accessed via `GET localhost:8080/bookings?{date}` where date is in the form `YYYY/MM/DD`.
+### Book a room
 
-## Bugs/Problems
-1. There is a pretty serious bug as users are able to book rooms that don't exist. This is because the app doesn't check if a room exists before making the booking and blindly trusts the client. (realised this a little too late).
+```http
+POST /bookings
+Content-Type: application/json
+```
 
-2. I'm missing some validation for when users make a POST request
+Example:
 
-3. I had decided to use an sql file to setup the database and consequently I wasn't able to hash the passwords. They are now stored in plaintext which is not okay.
+```bash
+curl --user Jane:password \
+  --header "Content-Type: application/json" \
+  --data '{"date":"2026-10-10","room":"D"}' \
+  --write-out "%{http_code}\n" \
+  "http://localhost:8080/bookings"
+```
 
-4. We don't have any meta columns in our databases like updated and created timestamps
+A successful booking returns `201 Created` with an empty response body.
+Attempting to book the same room and date again returns `400 Bad Request`.
 
-5. We don't ping the database to make sure that it actually runs
+Error responses from the API use this shape:
 
-6. I wanted to have middleware that provides logging of the request, request-id, response status, etc but I didn't have time.
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "room has already been booked"
+  }
+}
+```
 
-7. Didn't have any real integration tests - the only ones I added are in the repo layer. Again time issue though ideally this would be done via something like Jenkins as a smoke test.
+## Testing
 
-## Improvements
-1. Would have been nice to add a cache like Redis or an in-memory cache to improve the scalability of the application. When checking for available rooms for a date, we can use something like an LRU cache and when a booking occurs, that date can be updated. This is compounded by the fact that sqlite3 doesn't allow for concurrent access.
+Run the test suite with:
 
-2. Improve the database, either going to mySQL or Postgres. I could have set some options to improve the performance of sqlite but didn't have time to look into it in detail. But ultimately, a production ready database would be preferred.
+```bash
+CGO_ENABLED=1 go test ./...
+```
 
-3. For security/reliability - a rate limiter would also be nice to ensure our service is protected against heavy or even malicious use. 
+## Project structure
+
+```text
+cmd/                 Application entry point
+internal/api/        HTTP server, handlers, and authentication middleware
+internal/db/         Database connection and setup scripts
+internal/domain/     Core domain models
+internal/repo/       SQLite data access
+internal/service/    Booking and availability business rules
+```
+
+## Known limitations
+
+This project is suitable for demonstration and local development, not
+production use. In particular:
+
+- Seeded passwords are stored in plaintext.
+- The booking endpoint does not verify that a submitted room exists.
+- Request payload validation and structured request logging are limited.
+- SQLite restricts the application's options for concurrent writes and
+  horizontal scaling.
